@@ -24,7 +24,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '').strip()
-ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()] if allowed_hosts_env else ['*']
+ALLOWED_HOSTS = [
+    h.strip().replace('https://', '').replace('http://', '').rstrip('/')
+    for h in allowed_hosts_env.split(',') if h.strip()
+] if allowed_hosts_env else ['*']
 
 # Application definition
 INSTALLED_APPS = [
