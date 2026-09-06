@@ -11,8 +11,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / '.env')
 
 # Initialize Sentry
-SENTRY_DSN = os.getenv('SENTRY_DSN')
-if SENTRY_DSN:
+SENTRY_DSN = os.getenv('SENTRY_DSN', '').strip()
+# Ignore placeholder values and only initialize if valid
+if SENTRY_DSN and SENTRY_DSN.lower() != 'your_sentry_dsn_here' and SENTRY_DSN.startswith('http'):
     sentry_sdk.init(
         dsn=SENTRY_DSN,
         traces_sample_rate=1.0,
@@ -22,7 +23,8 @@ if SENTRY_DSN:
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-fallback')
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '').split(',')] if os.getenv('ALLOWED_HOSTS') else ['*']
+allowed_hosts_env = os.getenv('ALLOWED_HOSTS', '').strip()
+ALLOWED_HOSTS = [h.strip() for h in allowed_hosts_env.split(',') if h.strip()] if allowed_hosts_env else ['*']
 
 # Application definition
 INSTALLED_APPS = [
@@ -105,9 +107,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Settings
-CORS_ALLOWED_ORIGINS = [o.strip() for o in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')] if os.getenv('CORS_ALLOWED_ORIGINS') else []
+cors_env = os.getenv('CORS_ALLOWED_ORIGINS', '').strip()
+CORS_ALLOWED_ORIGINS = [o.strip().rstrip('/') for o in cors_env.split(',') if o.strip()] if cors_env else []
 
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')] if os.getenv('CSRF_TRUSTED_ORIGINS') else []
+csrf_env = os.getenv('CSRF_TRUSTED_ORIGINS', '').strip()
+CSRF_TRUSTED_ORIGINS = [o.strip().rstrip('/') for o in csrf_env.split(',') if o.strip()] if csrf_env else []
 
 if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
